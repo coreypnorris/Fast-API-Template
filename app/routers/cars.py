@@ -63,6 +63,10 @@ def change_car(id: int, new_data: CarInput) -> CarOutput:
         raise HTTPException(status_code=404, detail=f"No car with id={id}.")
 
 
+class BadTripException(Exception):
+    pass
+
+
 @router.post("/{car_id}/trips", response_model=TripOutput)
 def add_trip(car_id: int, trip: TripInput) -> TripOutput:
     matches = [car for car in db if car.id == car_id]
@@ -71,6 +75,10 @@ def add_trip(car_id: int, trip: TripInput) -> TripOutput:
         new_trip = TripOutput(id=len(car.trips)+1,
                               start=trip.start, end=trip.end,
                               description=trip.description)
+
+        if new_trip.end < new_trip.start:
+            raise BadTripException("Trip end before start")
+
         car.trips.append(new_trip)
         save_db(db)
         return new_trip
