@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import cars, web
 from starlette.responses import JSONResponse
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY, HTTP_500_INTERNAL_SERVER_ERROR
+from starlette import status
 from app.routers.cars import BadTripException
 
 
@@ -36,7 +36,7 @@ async def global_exception_handler_middleware(request: Request, call_next):
         # Add custom logging here in future. For now, just print to console.
         print(str(ex))
         return JSONResponse(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal server error."},
         )
 
@@ -45,7 +45,7 @@ async def global_exception_handler_middleware(request: Request, call_next):
 @app.exception_handler(BadTripException)
 async def unicorn_exception_handler(request: Request, exc: BadTripException):
     return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={"message": "Bad Trip"},
     )
 

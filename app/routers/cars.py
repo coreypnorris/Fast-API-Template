@@ -1,11 +1,12 @@
-from fastapi import HTTPException, APIRouter
+from fastapi import HTTPException, APIRouter, Depends
 from typing import Optional
-from app.data.schemas import CarInput, CarOutput, TripOutput, TripInput
-from app.data.db import load_db, save_db
+from app.data.schemas import CarInput, CarOutput, TripOutput, TripInput, User
+from app.data.db import load_cars_db, save_cars_db
+from app.routers.auth import get_authenticated_user
 
 
 router = APIRouter(prefix="/api/cars")
-db = load_db()
+db = load_cars_db()
 
 
 @router.get("/")
@@ -28,36 +29,36 @@ def car_by_id(id: int) -> dict:
 
 
 @router.post("/", response_model=CarOutput)
-def add_car(car: CarInput) -> CarOutput:
-    new_car = CarOutput(size=car.size, doors=car.doors,
-                        fuel=car.fuel, transmission=car.transmission,
+def add_car(input: CarInput, user: User = Depends(get_authenticated_user)) -> CarOutput:
+    new_car = CarOutput(size=input.size, doors=input.doors,
+                        fuel=input.fuel, transmission=input.transmission,
                         id=len(db)+1)
     db.append(new_car)
-    save_db(db)
+    save_cars_db(db)
     return new_car
 
 
 @router.delete("/{id}", status_code=204)
-def remove_car(id: int) -> None:
+def remove_car(id: int, user: User = Depends(get_authenticated_user)) -> None:
     matches = [car for car in db if car.id == id]
     if matches:
         car = matches[0]
         db.remove(car)
-        save_db(db)
+        save_cars_db(db)
     else:
         raise HTTPException(status_code=404, detail=f"No car with id={id}.")
 
 
 @router.put("/{id}", response_model=CarOutput)
-def change_car(id: int, new_data: CarInput) -> CarOutput:
+def change_car(id: int, input: CarInput, user: User = Depends(get_authenticated_user)) -> CarOutput:
     matches = [car for car in db if car.id == id]
     if matches:
         car = matches[0]
-        car.fuel = new_data.fuel
-        car.transmission = new_data.transmission
-        car.size = new_data.size
-        car.doors = new_data.doors
-        save_db(db)
+        car.fuel = input.fuel
+        car.transmission = input.transmission
+        car.size = input.size
+        car.doors = input.doors
+        save_cars_db(db)
         return car
     else:
         raise HTTPException(status_code=404, detail=f"No car with id={id}.")
@@ -68,19 +69,19 @@ class BadTripException(Exception):
 
 
 @router.post("/{car_id}/trips", response_model=TripOutput)
-def add_trip(car_id: int, trip: TripInput) -> TripOutput:
+def add_trip(car_id: int, input: TripInput, user: User = Depends(get_authenticated_user)) -> TripOutput:
     matches = [car for car in db if car.id == car_id]
     if matches:
         car = matches[0]
-        new_trip = TripOutput(id=len(car.trips)+1,
-                              start=trip.start, end=trip.end,
-                              description=trip.description)
+        output = TripOutput(id=len(car.trips)+1,
+                            start=input.start, end=input.end,
+                            description=input.description)
 
-        if new_trip.end < new_trip.start:
+        if output.end < output.start:
             raise BadTripException("Trip end before start")
 
-        car.trips.append(new_trip)
-        save_db(db)
-        return new_trip
+        car.trips.append(output)
+        save_cars_db(db)
+        return output
     else:
         raise HTTPException(status_code=404, detail=f"No car with id={id}.")
