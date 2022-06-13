@@ -75,7 +75,7 @@
         "fuel": "gasoline",
         "doors": 5,
         "transmission": "manual",
-        "id": 6,
+        "id": 5,
         "trips": []
     },
     {
@@ -83,7 +83,7 @@
         "fuel": "diesel",
         "doors": 5,
         "transmission": "manual",
-        "id": 7,
+        "id": 6,
         "trips": []
     },
     {
@@ -91,7 +91,7 @@
         "fuel": "electric",
         "doors": 5,
         "transmission": "auto",
-        "id": 8,
+        "id": 7,
         "trips": []
     },
     {
@@ -99,7 +99,7 @@
         "fuel": "hybrid",
         "doors": 5,
         "transmission": "auto",
-        "id": 9,
+        "id": 8,
         "trips": [
             {
                 "start": 0,
