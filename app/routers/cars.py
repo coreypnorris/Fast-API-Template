@@ -3,20 +3,16 @@ from typing import Optional
 from app.data.schemas import CarInput, CarOutput, TripOutput, TripInput, User
 from app.data.db import load_cars_db, save_cars_db
 from app.routers.auth import get_authenticated_user
+from fastapi_pagination import Page, paginate
 
 
 router = APIRouter(prefix="/api/cars")
 db = load_cars_db()
 
 
-@router.get("/")
-def get_cars(size: Optional[str] = None, doors: Optional[int] = None) -> list:
-    result = db
-    if size:
-        result = [car for car in result if car.size == size]
-    if doors:
-        result = [car for car in result if car.doors >= doors]
-    return result
+@router.get("/", response_model=Page[CarOutput])
+def get_cars() -> list:
+    return paginate(db)
 
 
 @router.get("/{id}")
@@ -85,3 +81,4 @@ def add_trip(car_id: int, input: TripInput, user: User = Depends(get_authenticat
         return output
     else:
         raise HTTPException(status_code=404, detail=f"No car with id={id}.")
+        

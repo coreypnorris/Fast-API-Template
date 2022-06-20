@@ -5,6 +5,7 @@ from app.routers import cars, web
 from starlette.responses import JSONResponse
 from starlette import status
 from app.routers.cars import BadTripException
+from fastapi_pagination import add_pagination
 
 
 # Routers
@@ -14,6 +15,7 @@ app.include_router(web.router)
 
 
 # Middleware
+add_pagination(app)
 origins = [
     "http://localhost:8000"
 ]
